@@ -34,6 +34,8 @@ public class SpringListView extends ListView {
     private float mOffsetY;
     private int mActivePointerId = INVALID_POINTER;
 
+    private boolean mEnableSpringEffect = true;
+
     private Animation dragBackAnimation = new Animation() {
         @Override
         protected void applyTransformation(float interpolatedTime, Transformation t) {
@@ -66,7 +68,7 @@ public class SpringListView extends ListView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (onInterceptTouchEventInternal(ev)) {
+        if (mEnableSpringEffect && onInterceptTouchEventInternal(ev)) {
             return true;
         }
         return super.onInterceptTouchEvent(ev);
@@ -154,7 +156,7 @@ public class SpringListView extends ListView {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        if (onTouchEventInternal(ev)) {
+        if (mEnableSpringEffect && onTouchEventInternal(ev)) {
             return true;
         }
         return super.onTouchEvent(ev);
@@ -306,5 +308,9 @@ public class SpringListView extends ListView {
             final int newPointerIndex = pointerIndex == 0 ? 1 : 0;
             mActivePointerId = ev.getPointerId(newPointerIndex);
         }
+    }
+
+    public void setEnableSpringEffect(boolean enable) {
+        mEnableSpringEffect = enable;
     }
 }
