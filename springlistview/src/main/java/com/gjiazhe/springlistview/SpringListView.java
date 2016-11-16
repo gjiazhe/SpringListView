@@ -9,7 +9,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewParent;
 import android.view.animation.Animation;
-import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.view.animation.Transformation;
 import android.widget.ListView;
 
@@ -22,9 +22,13 @@ public class SpringListView extends ListView {
     public static final int STATE_DRAG_TOP = 1;
     public static final int STATE_DRAG_BOTTOM = 2;
     public static final int STATE_SPRING_BACK = 3;
+    public static final int STATE_FLING = 4;
     private int mState = STATE_NORMAL;
 
-    private static final int DRAG_BACK_DURATION = 500;
+    private static final int DEF_RELEASE_BACK_ANIM_DURATION = 300;
+    private static final int DEF_FLING_BACK_ANIM_DURATION = 300;
+    private int releaseBackAnimDuration = DEF_RELEASE_BACK_ANIM_DURATION;
+    private int flingBackAnimDuration = DEF_FLING_BACK_ANIM_DURATION;
 
     private static final int INVALID_POINTER = -1;
 
@@ -35,18 +39,11 @@ public class SpringListView extends ListView {
     private int mActivePointerId = INVALID_POINTER;
 
     private boolean mEnableSpringEffect = true;
+    private boolean mEnableSpringEffectWhenFling = true;
 
-    private Animation dragBackAnimation = new Animation() {
-        @Override
-        protected void applyTransformation(float interpolatedTime, Transformation t) {
-            mOffsetY = mFrom * (1 - interpolatedTime);
-            if (hasEnded()) {
-                mOffsetY = 0;
-                setState(STATE_NORMAL);
-            }
-            invalidate();
-        }
-    };
+    private Animation springAnimation;
+    private Interpolator releaseBackAnimInterpolator;
+    private Interpolator flingBackAnimInterpolator;
 
     public SpringListView(Context context) {
         this(context, null);
@@ -62,8 +59,7 @@ public class SpringListView extends ListView {
 
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
 
-        dragBackAnimation.setDuration(DRAG_BACK_DURATION);
-        dragBackAnimation.setInterpolator(new DecelerateInterpolator());
+        initAnimation();
     }
 
     @Override
@@ -255,7 +251,7 @@ public class SpringListView extends ListView {
                 if (mOffsetY != 0) {
                     // Spring back
                     mFrom = mOffsetY;
-                    startAnimation(dragBackAnimation);
+                    startReleaseAnimation();
                     setState(STATE_SPRING_BACK);
                 }
                 mActivePointerId = INVALID_POINTER;
@@ -279,6 +275,67 @@ public class SpringListView extends ListView {
             super.draw(canvas);
             canvas.restoreToCount(sc);
         }
+    }
+
+    @Override
+    protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY,
+                                   int scrollRangeX, int scrollRangeY,
+                                   int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
+
+        final boolean overScroll = super.overScrollBy(deltaX, deltaY, scrollX, scrollY,
+                        scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+
+        if (!mEnableSpringEffectWhenFling) {
+            return overScroll;
+        }
+        if (overScroll && !isTouchEvent) {
+            if (mState != STATE_FLING) {
+                mFrom = - deltaY;
+                startFlingAnimation();
+                setState(STATE_FLING);
+            }
+        }
+        return overScroll;
+    }
+
+    private void initAnimation() {
+        springAnimation = new Animation() {
+            @Override
+            protected void applyTransformation(float interpolatedTime, Transformation t) {
+                mOffsetY = mFrom * interpolatedTime;
+                if (hasEnded()) {
+                    mOffsetY = 0;
+                    setState(STATE_NORMAL);
+                }
+                invalidate();
+            }
+        };
+
+        releaseBackAnimInterpolator = new Interpolator() {
+            @Override
+            public float getInterpolation(float v) {
+                return (float) Math.cos(Math.PI * v / 2);
+            }
+        };
+
+        flingBackAnimInterpolator = new Interpolator() {
+            @Override
+            public float getInterpolation(float v) {
+                return (float) Math.sin(Math.PI * v);
+            }
+        };
+    }
+
+    private void startReleaseAnimation() {
+        springAnimation.setDuration(releaseBackAnimDuration);
+        springAnimation.setInterpolator(releaseBackAnimInterpolator);
+        startAnimation(springAnimation);
+    }
+
+    private void startFlingAnimation() {
+        springAnimation.setDuration(flingBackAnimDuration);
+        springAnimation.setInterpolator(flingBackAnimInterpolator);
+        startAnimation(springAnimation);
     }
 
     private void setState(int newState) {
@@ -312,5 +369,17 @@ public class SpringListView extends ListView {
 
     public void setEnableSpringEffect(boolean enable) {
         mEnableSpringEffect = enable;
+    }
+
+    public void setEnableSpringEffectWhenFling(boolean enable) {
+        mEnableSpringEffectWhenFling = enable;
+    }
+
+    public void setReleaseBackAnimDuration(int duration) {
+        releaseBackAnimDuration = duration;
+    }
+
+    public void setFlingBackAnimDuration(int duration) {
+        flingBackAnimDuration = duration;
     }
 }
