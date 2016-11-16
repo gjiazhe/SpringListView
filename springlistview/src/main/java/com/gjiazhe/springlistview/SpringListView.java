@@ -19,11 +19,11 @@ import android.widget.ListView;
  */
 
 public class SpringListView extends ListView {
-    public static final int STATE_NORMAL = 0;
-    public static final int STATE_DRAG_TOP = 1;
-    public static final int STATE_DRAG_BOTTOM = 2;
-    public static final int STATE_SPRING_BACK = 3;
-    public static final int STATE_FLING = 4;
+    private static final int STATE_NORMAL = 0;
+    private static final int STATE_DRAG_TOP = 1;
+    private static final int STATE_DRAG_BOTTOM = 2;
+    private static final int STATE_SPRING_BACK = 3;
+    private static final int STATE_FLING = 4;
     private int mState = STATE_NORMAL;
 
     private static final int DEF_RELEASE_BACK_ANIM_DURATION = 300; // ms
@@ -39,7 +39,7 @@ public class SpringListView extends ListView {
     private float mOffsetY;
     private int mActivePointerId = INVALID_POINTER;
 
-    private boolean mEnableSpringEffect;
+    private boolean mEnableSpringEffectWhenDrag;
     private boolean mEnableSpringEffectWhenFling;
 
     private Animation springAnimation;
@@ -63,7 +63,7 @@ public class SpringListView extends ListView {
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SpringListView);
         mReleaseBackAnimDuration = a.getInt(R.styleable.SpringListView_slv_releaseBackAnimDuration, DEF_RELEASE_BACK_ANIM_DURATION);
         mFlingBackAnimDuration = a.getInt(R.styleable.SpringListView_slv_flingBackAnimDuration, DEF_FLING_BACK_ANIM_DURATION);
-        mEnableSpringEffect = a.getBoolean(R.styleable.SpringListView_slv_enableSpringEffect, true);
+        mEnableSpringEffectWhenDrag = a.getBoolean(R.styleable.SpringListView_slv_enableSpringEffectWhenDrag, true);
         mEnableSpringEffectWhenFling = a.getBoolean(R.styleable.SpringListView_slv_enableSpringEffectWhenFling, true);
         a.recycle();
 
@@ -72,7 +72,7 @@ public class SpringListView extends ListView {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        if (mEnableSpringEffect && onInterceptTouchEventInternal(ev)) {
+        if (mEnableSpringEffectWhenDrag && onInterceptTouchEventInternal(ev)) {
             return true;
         }
         return super.onInterceptTouchEvent(ev);
@@ -160,7 +160,7 @@ public class SpringListView extends ListView {
 
     @Override
     public boolean onTouchEvent(MotionEvent ev) {
-        if (mEnableSpringEffect && onTouchEventInternal(ev)) {
+        if (mEnableSpringEffectWhenDrag && onTouchEventInternal(ev)) {
             return true;
         }
         return super.onTouchEvent(ev);
@@ -375,8 +375,8 @@ public class SpringListView extends ListView {
         }
     }
 
-    public void setEnableSpringEffect(boolean enable) {
-        mEnableSpringEffect = enable;
+    public void setEnableSpringEffectWhenDrag(boolean enable) {
+        mEnableSpringEffectWhenDrag = enable;
     }
 
     public void setEnableSpringEffectWhenFling(boolean enable) {

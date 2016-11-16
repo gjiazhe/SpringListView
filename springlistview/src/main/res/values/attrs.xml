@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="SpringListView">
-        <attr name="slv_enableSpringEffect" format="boolean"/>
+        <attr name="slv_enableSpringEffectWhenDrag" format="boolean"/>
         <attr name="slv_enableSpringEffectWhenFling" format="boolean"/>
         <attr name="slv_releaseBackAnimDuration" format="integer"/>
         <attr name="slv_flingBackAnimDuration" format="integer"/>
