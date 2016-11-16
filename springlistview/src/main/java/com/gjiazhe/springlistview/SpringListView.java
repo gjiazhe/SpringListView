@@ -1,6 +1,7 @@
 package com.gjiazhe.springlistview;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.support.v4.view.MotionEventCompat;
 import android.util.AttributeSet;
@@ -25,10 +26,10 @@ public class SpringListView extends ListView {
     public static final int STATE_FLING = 4;
     private int mState = STATE_NORMAL;
 
-    private static final int DEF_RELEASE_BACK_ANIM_DURATION = 300;
+    private static final int DEF_RELEASE_BACK_ANIM_DURATION = 300; // ms
     private static final int DEF_FLING_BACK_ANIM_DURATION = 300;
-    private int releaseBackAnimDuration = DEF_RELEASE_BACK_ANIM_DURATION;
-    private int flingBackAnimDuration = DEF_FLING_BACK_ANIM_DURATION;
+    private int mReleaseBackAnimDuration;
+    private int mFlingBackAnimDuration;
 
     private static final int INVALID_POINTER = -1;
 
@@ -38,8 +39,8 @@ public class SpringListView extends ListView {
     private float mOffsetY;
     private int mActivePointerId = INVALID_POINTER;
 
-    private boolean mEnableSpringEffect = true;
-    private boolean mEnableSpringEffectWhenFling = true;
+    private boolean mEnableSpringEffect;
+    private boolean mEnableSpringEffectWhenFling;
 
     private Animation springAnimation;
     private Interpolator releaseBackAnimInterpolator;
@@ -58,6 +59,13 @@ public class SpringListView extends ListView {
         setOverScrollMode(View.OVER_SCROLL_NEVER);
 
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+
+        TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.SpringListView);
+        mReleaseBackAnimDuration = a.getInt(R.styleable.SpringListView_slv_releaseBackAnimDuration, DEF_RELEASE_BACK_ANIM_DURATION);
+        mFlingBackAnimDuration = a.getInt(R.styleable.SpringListView_slv_flingBackAnimDuration, DEF_FLING_BACK_ANIM_DURATION);
+        mEnableSpringEffect = a.getBoolean(R.styleable.SpringListView_slv_enableSpringEffect, true);
+        mEnableSpringEffectWhenFling = a.getBoolean(R.styleable.SpringListView_slv_enableSpringEffectWhenFling, true);
+        a.recycle();
 
         initAnimation();
     }
@@ -327,13 +335,13 @@ public class SpringListView extends ListView {
     }
 
     private void startReleaseAnimation() {
-        springAnimation.setDuration(releaseBackAnimDuration);
+        springAnimation.setDuration(mReleaseBackAnimDuration);
         springAnimation.setInterpolator(releaseBackAnimInterpolator);
         startAnimation(springAnimation);
     }
 
     private void startFlingAnimation() {
-        springAnimation.setDuration(flingBackAnimDuration);
+        springAnimation.setDuration(mFlingBackAnimDuration);
         springAnimation.setInterpolator(flingBackAnimInterpolator);
         startAnimation(springAnimation);
     }
@@ -376,10 +384,10 @@ public class SpringListView extends ListView {
     }
 
     public void setReleaseBackAnimDuration(int duration) {
-        releaseBackAnimDuration = duration;
+        mReleaseBackAnimDuration = duration;
     }
 
     public void setFlingBackAnimDuration(int duration) {
-        flingBackAnimDuration = duration;
+        mFlingBackAnimDuration = duration;
     }
 }
