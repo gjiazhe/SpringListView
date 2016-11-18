@@ -2,6 +2,8 @@
 
 SpringListView is a ListView with spring effect when being dragged or flinged to overScroll.
 
+RecyclerView Version: https://github.com/gjiazhe/SpringRecyclerView
+
 ## Screenshot
 
 ![screenshot](screenshot/screenshot.gif)
